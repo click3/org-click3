@@ -10,13 +10,14 @@ public:
 
 	static boost::shared_ptr<NotificationCenter> GetDefaultCenter(void);
 
-	typedef void (*observer)(const char *notify_name, void *data);
-	void AddObserver(const char *notify_name, observer proc);
+	typedef void (*observer)(const char *notify_name, boost::shared_ptr<void> user_data, boost::shared_ptr<void> data);
+
+	void AddObserver(const char *notify_name, observer proc, boost::shared_ptr<void> user_data = boost::shared_ptr<void>());
 	bool RemoveObserver(const char *notify_name, observer proc);
-	void SendNotification(const char *notify_name, void *data);
+	void SendNotification(const char *notify_name, boost::shared_ptr<void> data);
 private:
 	static boost::shared_ptr<NotificationCenter> default_notification_center;
-	std::multimap<boost::optional<std::string>, observer> observers;
+	std::multimap<boost::optional<std::string>, boost::tuple<observer, boost::shared_ptr<void> > > observers;
 };
 
 } // click3

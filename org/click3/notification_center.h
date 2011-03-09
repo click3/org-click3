@@ -1,5 +1,9 @@
 
+#ifdef _DEBUG
+#pragma comment(lib, "notification_center_debug.lib")
+#else
 #pragma comment(lib, "notification_center.lib")
+#endif
 
 namespace org { namespace click3 {
 

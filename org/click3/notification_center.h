@@ -7,6 +7,9 @@
 
 namespace org { namespace click3 {
 
+#pragma warning(push)
+#pragma warning(disable: 4625)
+#pragma warning(disable: 4626)
 class NotificationCenter : boost::noncopyable {
 public:
 	NotificationCenter();
@@ -23,6 +26,7 @@ private:
 	static boost::shared_ptr<NotificationCenter> default_notification_center;
 	std::multimap<boost::optional<std::string>, boost::tuple<observer, boost::shared_ptr<void> > > observers;
 };
+#pragma warning(pop)
 
 } // click3
 

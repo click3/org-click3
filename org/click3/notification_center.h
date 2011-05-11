@@ -1,9 +1,19 @@
 
+#ifdef _MT
+#ifdef _DLL
 #ifdef _DEBUG
-#pragma comment(lib, "notification_center_debug.lib")
+#pragma comment(lib, "notification_center_debug_shared.lib")
 #else
-#pragma comment(lib, "notification_center.lib")
-#endif
+#pragma comment(lib, "notification_center_release_shared.lib")
+#endif // _DEBUG
+#else
+#ifdef _DEBUG
+#pragma comment(lib, "notification_center_debug_static.lib")
+#else
+#pragma comment(lib, "notification_center_release_static.lib")
+#endif // _DEBUG
+#endif // _DLL
+#endif // _MT
 
 namespace org { namespace click3 {
 

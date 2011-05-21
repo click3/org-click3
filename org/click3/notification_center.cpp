@@ -92,14 +92,18 @@ void ThreadProxy(NotificationCenter::observer proc, boost::shared_ptr<std::strin
 }
 
 
-void SendNotificationImpl(const_iterator it, const_iterator end_it, boost::shared_ptr<std::string> notify_name, boost::shared_ptr<void> data) {
+void SendNotificationImpl(const_iterator it, const_iterator end_it, boost::shared_ptr<std::string> notify_name, boost::shared_ptr<void> data, bool single_thread) {
 	while(it != end_it) {
 		NotificationCenter::observer proc;
 		boost::shared_ptr<void> user_data;
 		boost::tie(proc, user_data) = it->second;
-		// observer内でAdd/Remove/Sendするとデッドロックするため別スレッドで実行する
-		boost::thread th(boost::bind(&ThreadProxy, proc, notify_name, user_data, data));
-		th.detach();
+		boost::function<void (void)> bind_proc = boost::bind(&ThreadProxy, proc, notify_name, user_data, data);
+		if(single_thread) {
+			bind_proc();
+		} else {
+			boost::thread th(bind_proc);
+			th.detach();
+		}
 		++it;
 	}
 }
@@ -159,7 +163,7 @@ bool NotificationCenter::RemoveObserver(const char *notify_name, observer proc) 
 	return RemoveObserverImpl(values.first, values.second, proc, &observer_list);
 }
 
-void NotificationCenter::SendNotification(const char *notify_name_ptr, boost::shared_ptr<void> data) const {
+void NotificationCenter::SendNotification(const char *notify_name_ptr, boost::shared_ptr<void> data, bool single_thread) const {
 	boost::mutex::scoped_lock lk(observer_list_mtx);
 	boost::shared_ptr<std::string> notify_name;
 	if(notify_name_ptr != NULL) {
@@ -167,12 +171,12 @@ void NotificationCenter::SendNotification(const char *notify_name_ptr, boost::sh
 	}
 	{
 		std::pair<const_iterator, const_iterator> values = observer_list.equal_range(boost::none);
-		SendNotificationImpl(values.first, values.second, notify_name, data);
+		SendNotificationImpl(values.first, values.second, notify_name, data, single_thread);
 	}
 	if(notify_name != NULL) {
 		boost::optional<std::string> key = CreateKey(notify_name_ptr);
 		std::pair<const_iterator, const_iterator> values = observer_list.equal_range(key);
-		SendNotificationImpl(values.first, values.second, notify_name, data);
+		SendNotificationImpl(values.first, values.second, notify_name, data, single_thread);
 	}
 }
 

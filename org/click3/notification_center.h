@@ -33,7 +33,7 @@ public:
 
 	void AddObserver(const char *notify_name, observer proc, boost::shared_ptr<void> user_data = boost::shared_ptr<void>());
 	bool RemoveObserver(const char *notify_name, observer proc);
-	void SendNotification(const char *notify_name, boost::shared_ptr<void> data) const;
+	void SendNotification(const char *notify_name, boost::shared_ptr<void> data, bool single_thread = true) const;
 private:
 	mutable boost::mutex observer_list_mtx;
 	std::multimap<boost::optional<std::string>, boost::tuple<observer, boost::shared_ptr<void> > > observer_list;

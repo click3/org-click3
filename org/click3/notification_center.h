@@ -35,7 +35,8 @@ public:
 	bool RemoveObserver(const char *notify_name, observer proc);
 	void SendNotification(const char *notify_name, boost::shared_ptr<void> data) const;
 private:
-	std::multimap<boost::optional<std::string>, boost::tuple<observer, boost::shared_ptr<void> > > observers;
+	mutable boost::mutex observer_list_mtx;
+	std::multimap<boost::optional<std::string>, boost::tuple<observer, boost::shared_ptr<void> > > observer_list;
 };
 #pragma warning(pop)
 

@@ -38,6 +38,7 @@
 #include "boost/optional.hpp"
 #include "boost/shared_ptr.hpp"
 #include "boost/tuple/tuple.hpp"
+#include "boost/thread.hpp"
 
 #include <string>
 #include <map>
@@ -82,17 +83,28 @@ boost::optional<std::string> CreateKey(const char *notify_name) {
 	}
 }
 
-void SendNotificationImpl(const_iterator it, const_iterator end_it, const char *notify_name, boost::shared_ptr<void> data) {
+void ThreadProxy(NotificationCenter::observer proc, boost::shared_ptr<std::string> notify_name, boost::shared_ptr<void> user_data, boost::shared_ptr<void> data) {
+	const char *notify_name_impl = NULL;
+	if(notify_name) {
+		notify_name_impl = notify_name->c_str();
+	}
+	proc(notify_name_impl, user_data, data);
+}
+
+
+void SendNotificationImpl(const_iterator it, const_iterator end_it, boost::shared_ptr<std::string> notify_name, boost::shared_ptr<void> data) {
 	while(it != end_it) {
 		NotificationCenter::observer proc;
 		boost::shared_ptr<void> user_data;
 		boost::tie(proc, user_data) = it->second;
-		proc(notify_name, user_data, data);
+		// observer内でAdd/Remove/Sendするとデッドロックするため別スレッドで実行する
+		boost::thread th(boost::bind(&ThreadProxy, proc, notify_name, user_data, data));
+		th.detach();
 		++it;
 	}
 }
 
-bool RemoveObserverImpl(iterator it, iterator end_it, NotificationCenter::observer value, observer_map* observers) {
+bool RemoveObserverImpl(iterator it, iterator end_it, NotificationCenter::observer value, observer_map* observer_list) {
 	boost::optional<iterator> erase_first = boost::none;;
 	boost::optional<iterator> erase_end = boost::none;;
 	while(it != end_it) {
@@ -108,7 +120,7 @@ bool RemoveObserverImpl(iterator it, iterator end_it, NotificationCenter::observ
 		++it;
 	}
 	if(erase_first) {
-		observers->erase(erase_first.get(), erase_end.get());
+		observer_list->erase(erase_first.get(), erase_end.get());
 		return true;
 	}
 	return false;
@@ -125,6 +137,8 @@ NotificationCenter::~NotificationCenter() {
 
 //static
 boost::shared_ptr<NotificationCenter> NotificationCenter::GetDefaultCenter(void) {
+	static boost::mutex mtx;
+	boost::mutex::scoped_lock lk(mtx);
 	if(!default_notification_center) {
 		default_notification_center.reset(new NotificationCenter());
 	}
@@ -134,22 +148,30 @@ boost::shared_ptr<NotificationCenter> NotificationCenter::GetDefaultCenter(void)
 void NotificationCenter::AddObserver(const char *notify_name, observer proc, boost::shared_ptr<void> user_data) {
 	boost::optional<std::string> key = CreateKey(notify_name);
 	boost::tuple<observer, boost::shared_ptr<void> > value = boost::make_tuple<observer, boost::shared_ptr<void> >(proc, user_data);
-	observers.insert(map_value(key, value));
+	boost::mutex::scoped_lock lk(observer_list_mtx);
+	observer_list.insert(map_value(key, value));
 }
 
 bool NotificationCenter::RemoveObserver(const char *notify_name, observer proc) {
 	boost::optional<std::string> key = CreateKey(notify_name);
-	std::pair<iterator, iterator> values = observers.equal_range(key);
-	return RemoveObserverImpl(values.first, values.second, proc, &observers);
+	boost::mutex::scoped_lock lk(observer_list_mtx);
+	std::pair<iterator, iterator> values = observer_list.equal_range(key);
+	return RemoveObserverImpl(values.first, values.second, proc, &observer_list);
 }
-void NotificationCenter::SendNotification(const char *notify_name, boost::shared_ptr<void> data) const {
+
+void NotificationCenter::SendNotification(const char *notify_name_ptr, boost::shared_ptr<void> data) const {
+	boost::mutex::scoped_lock lk(observer_list_mtx);
+	boost::shared_ptr<std::string> notify_name;
+	if(notify_name_ptr != NULL) {
+		notify_name.reset(new std::string(notify_name_ptr));
+	}
 	{
-		std::pair<const_iterator, const_iterator> values = observers.equal_range(boost::none);
+		std::pair<const_iterator, const_iterator> values = observer_list.equal_range(boost::none);
 		SendNotificationImpl(values.first, values.second, notify_name, data);
 	}
 	if(notify_name != NULL) {
-		boost::optional<std::string> key = CreateKey(notify_name);
-		std::pair<const_iterator, const_iterator> values = observers.equal_range(key);
+		boost::optional<std::string> key = CreateKey(notify_name_ptr);
+		std::pair<const_iterator, const_iterator> values = observer_list.equal_range(key);
 		SendNotificationImpl(values.first, values.second, notify_name, data);
 	}
 }

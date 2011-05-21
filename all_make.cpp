@@ -227,6 +227,16 @@ public:
 	}
 
 	bool Run(const Project &proj, const std::string &option_name) const {
+		std::map<std::string, Option>::const_iterator comp_opt_it = compile_options.find(option_name);
+		if(comp_opt_it == compile_options.end()) {
+			return false;
+		}
+		std::map<std::string, Option>::const_iterator lib_opt_it = lib_options.find(option_name);
+		if(lib_opt_it == lib_options.end()) {
+			return false;
+		}
+		const Option &compile_option = comp_opt_it->second;
+		const Option &lib_option = lib_opt_it->second;
 		const boost::filesystem::path temp_dir = boost::filesystem::temp_directory_path();
 		std::vector<std::string> obj_path_list;
 		BOOST_FOREACH(const std::string &src_file, proj.src_files) {
@@ -235,7 +245,7 @@ public:
 			boost::filesystem::create_directories(out_dir);
 			const boost::filesystem::path obj_path = (out_dir/src_path.filename()).replace_extension(".obj");
 			const std::map<std::string, std::string> compile_params = boost::assign::map_list_of("out_path", obj_path.string());
-			const std::string command = compiler + " " + compile_options.find(option_name)->second.Get(compile_params) + " " + src_path.string();
+			const std::string command = compiler + " " + compile_option.Get(compile_params) + " " + src_path.string();
 			if(0 != ::system(command.c_str())) {
 				return false;
 			}
@@ -247,7 +257,7 @@ public:
 		const boost::filesystem::path out_dir = boost::filesystem::path(out_path).remove_filename();
 		boost::filesystem::create_directories(out_dir);
 		const std::map<std::string, std::string> lib_params = boost::assign::map_list_of("out_path", out_path.string());
-		std::string command = lib_archiver + " " + lib_options.find(option_name)->second.Get(lib_params);
+		std::string command = lib_archiver + " " + lib_option.Get(lib_params);
 		BOOST_FOREACH(const std::string &obj_path, obj_path_list) {
 			command.append(" " + obj_path);
 		}

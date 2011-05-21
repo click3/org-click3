@@ -36,6 +36,7 @@
 
 #include <vector>
 
+#include "boost/version.hpp"
 #include "boost/static_assert.hpp"
 #include "boost/shared_ptr.hpp"
 #include "boost/function.hpp"

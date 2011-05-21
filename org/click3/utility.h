@@ -1,4 +1,6 @@
 
+BOOST_STATIC_ASSERT(BOOST_VERSION == 104601);
+
 #ifdef _MT
 #ifdef _DLL
 #ifdef _DEBUG

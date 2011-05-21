@@ -32,6 +32,8 @@
 #pragma warning(disable: 4711) // inline宣言されていない関数/メソッドをinline展開しました
 #endif
 
+#include "boost/version.hpp"
+#include "boost/static_assert.hpp"
 #include "boost/utility.hpp"
 #include "boost/optional.hpp"
 #include "boost/shared_ptr.hpp"
@@ -70,6 +72,7 @@ namespace {
 typedef std::multimap<boost::optional<std::string>, boost::tuple<NotificationCenter::observer, boost::shared_ptr<void> > > observer_map;
 typedef std::pair<boost::optional<std::string>, boost::tuple<NotificationCenter::observer, boost::shared_ptr<void> > > map_value;
 typedef observer_map::iterator iterator;
+typedef observer_map::const_iterator const_iterator;
 
 boost::optional<std::string> CreateKey(const char *notify_name) {
 	if(notify_name == NULL) {
@@ -79,7 +82,7 @@ boost::optional<std::string> CreateKey(const char *notify_name) {
 	}
 }
 
-void SendNotificationImpl(iterator it, iterator end_it, const char *notify_name, boost::shared_ptr<void> data) {
+void SendNotificationImpl(const_iterator it, const_iterator end_it, const char *notify_name, boost::shared_ptr<void> data) {
 	while(it != end_it) {
 		NotificationCenter::observer proc;
 		boost::shared_ptr<void> user_data;
@@ -97,7 +100,7 @@ bool RemoveObserverImpl(iterator it, iterator end_it, NotificationCenter::observ
 			if(!erase_first) {
 				erase_first = it;
 			}
-			erase_end = it; // ここで+1したいけど出来なかった……
+			erase_end = it;
 			++(erase_end.get());
 		} else if(erase_first) {
 			break;
@@ -110,6 +113,8 @@ bool RemoveObserverImpl(iterator it, iterator end_it, NotificationCenter::observ
 	}
 	return false;
 }
+
+boost::shared_ptr<NotificationCenter> default_notification_center;
 
 } // anonymous
 
@@ -137,20 +142,17 @@ bool NotificationCenter::RemoveObserver(const char *notify_name, observer proc) 
 	std::pair<iterator, iterator> values = observers.equal_range(key);
 	return RemoveObserverImpl(values.first, values.second, proc, &observers);
 }
-void NotificationCenter::SendNotification(const char *notify_name, boost::shared_ptr<void> data) {
+void NotificationCenter::SendNotification(const char *notify_name, boost::shared_ptr<void> data) const {
 	{
-		std::pair<iterator, iterator> values = observers.equal_range(boost::none);
+		std::pair<const_iterator, const_iterator> values = observers.equal_range(boost::none);
 		SendNotificationImpl(values.first, values.second, notify_name, data);
 	}
 	if(notify_name != NULL) {
 		boost::optional<std::string> key = CreateKey(notify_name);
-		std::pair<iterator, iterator> values = observers.equal_range(key);
+		std::pair<const_iterator, const_iterator> values = observers.equal_range(key);
 		SendNotificationImpl(values.first, values.second, notify_name, data);
 	}
 }
-
-//static
-boost::shared_ptr<NotificationCenter> NotificationCenter::default_notification_center;
 
 } // click3
 

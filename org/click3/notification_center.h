@@ -1,4 +1,6 @@
 
+BOOST_STATIC_ASSERT(BOOST_VERSION == 104601);
+
 #ifdef _MT
 #ifdef _DLL
 #ifdef _DEBUG
@@ -31,9 +33,8 @@ public:
 
 	void AddObserver(const char *notify_name, observer proc, boost::shared_ptr<void> user_data = boost::shared_ptr<void>());
 	bool RemoveObserver(const char *notify_name, observer proc);
-	void SendNotification(const char *notify_name, boost::shared_ptr<void> data);
+	void SendNotification(const char *notify_name, boost::shared_ptr<void> data) const;
 private:
-	static boost::shared_ptr<NotificationCenter> default_notification_center;
 	std::multimap<boost::optional<std::string>, boost::tuple<observer, boost::shared_ptr<void> > > observers;
 };
 #pragma warning(pop)

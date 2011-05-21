@@ -51,7 +51,7 @@ namespace org { namespace click3 { namespace Utility {
 
 namespace detail {
 
-#undef GetModuleFilename
+#undef GetModuleFileName
 unsigned int GetModuleFileName(char *buffer, unsigned int size, HMODULE module);
 unsigned int GetModuleFileName(wchar_t *buffer, unsigned int size, HMODULE module);
 

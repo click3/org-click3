@@ -78,19 +78,15 @@ bool MyFOpenImpl(FILE ** fp, const wchar_t *fn, const wchar_t *type) {
 	if(fp == NULL || fn == NULL || type == NULL || fn[0] == '\0' || type[0] == '\0') {
 		return false;
 	}
-	std::wstring dir_name(fn);
-	const BOOL result = detail::PathRemoveFileSpec(&dir_name[0]);
-	if(result == FALSE) {
-		return false;
-	}
-	boost::filesystem::path dir_path(dir_name);
-	boost::filesystem::create_directories(dir_path);
+	boost::filesystem::path dir_path(fn);
+	dir_path.remove_filename();
+	boost::filesystem::create_directories(boost::filesystem::absolute(dir_path));
 
 	const errno_t error = ::_wfopen_s(fp, fn, type);
 	if(error != 0) {
 		return false;
 	}
-	return 0;
+	return true;
 }
 
 void MyFClose(FILE *fp) {

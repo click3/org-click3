@@ -52,6 +52,7 @@
 #include "boost/type_traits/remove_pointer.hpp"
 #include "boost/gil/gil_all.hpp"
 #include "boost/filesystem/path.hpp"
+#include "boost/filesystem/operations.hpp"
 #include "boost/gil/extension/io/jpeg_io.hpp"
 // libpng1.4‚©‚çˆê•”’è”‚ªíœ‚³‚ê‚½‚½‚ßA‚È‚¯‚ê‚Î’è‹`‚µ‚Ä‚â‚é
 #if !defined png_infopp_NULL

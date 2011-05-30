@@ -26,12 +26,15 @@ bool GilViewToHBitmap(SHARED_HBITMAP &result, const boost::gil::rgb8c_view_t &vi
 bool ReadImageAsHBitmap(SHARED_HBITMAP &result, const wchar_t *filename);
 
 template<class image>
-void ReadImage(const boost::filesystem::path &path, image &im) {
+bool ReadImage(const boost::filesystem::path &path, image &im) {
+	if(!boost::filesystem::is_regular_file(path)) {
+		return false;
+	}
 	const wchar_t * const bmp_list[] = {L".bmp"};
 	const wchar_t * const jpg_list[] = {L".jpg", L".jpeg"};
 	const wchar_t * const png_list[] = {L".png"};
+	const std::wstring ext = path.extension().wstring();
 #define FIND(list, value) (std::find(&list[0], &list[sizeof(list) / sizeof(wchar_t *)], value) != &list[sizeof(list) / sizeof(wchar_t *)])
-	std::wstring ext = path.extension().wstring();
 	if(FIND(bmp_list, ext)) {
 		// TODO
 	} else if(FIND(jpg_list, ext)) {
@@ -39,9 +42,10 @@ void ReadImage(const boost::filesystem::path &path, image &im) {
 	} else if(FIND(png_list, ext)) {
 		boost::gil::png_read_and_convert_image(path.string(), im);
 	} else {
-		BOOST_ASSERT(false);
+		return false;
 	}
 #undef FIND
+	return true;
 }
 
 } // Image

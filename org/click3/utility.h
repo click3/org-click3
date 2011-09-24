@@ -1,5 +1,5 @@
 
-BOOST_STATIC_ASSERT(BOOST_VERSION == 104601);
+BOOST_STATIC_ASSERT(BOOST_VERSION == 104700);
 
 #ifdef _MT
 #ifdef _DLL
@@ -65,8 +65,8 @@ bool SetCurrentDirectory(const wchar_t *dir_name);
 
 } // detail
 
-template<class CONTAINER>
-bool GetModuleFileName(CONTAINER &buffer, HMODULE module = NULL) {
+std::string GetModuleFileName(HMODULE module);
+template<class CONTAINER> bool GetModuleFileName(CONTAINER &buffer, HMODULE module = NULL) {
 	::SetLastError(ERROR_SUCCESS);
 	for(unsigned int size = 256; size < 8192; size *= 2) {
 		buffer.resize(size);

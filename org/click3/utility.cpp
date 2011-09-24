@@ -183,6 +183,13 @@ bool SetCurrentDirectory(const wchar_t *dir_name) {
 
 } // detail
 
+std::string GetModuleFileName(HMODULE module) {
+	std::string buffer;
+	const bool result = GetModuleFileName(buffer, module);
+	BOOST_ASSERT(result);
+	return buffer;
+}
+
 bool SetAppDir(void) {
 	std::wstring dir_name;
 	if(!GetAppDir(dir_name) || dir_name.empty()) {

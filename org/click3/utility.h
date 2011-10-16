@@ -19,6 +19,11 @@ BOOST_STATIC_ASSERT(BOOST_VERSION == 104700);
 
 #pragma comment(lib, "Shlwapi.lib")
 
+
+#define strmove(s1,s2)	memmove(s1,s2,strlen(s2)+1)
+#define snprintf _snprintf
+
+
 #define SPRINTF_IMPL_IMPL(proc, buffer, start, fmt, ...)	::proc(&buffer[start], sizeof(buffer) / sizeof(*buffer) - start, fmt, __VA_ARGS__)
 #define STRLEN_IMPL(proc, buffer)					::proc(buffer, sizeof(buffer) / sizeof(*buffer))
 #define SPRINTF_IMPL(proc, len_proc, buffer, start, fmt, ...)							\
@@ -47,6 +52,7 @@ do {															\
 #define STRCAT(dest, source)				STRCAT_IMPL(strcat_s, dest, source)
 #define WSTRCAT(dest, source)				STRCAT_IMPL(wstrcat_s, dest, source)
 
+
 namespace org { namespace click3 { namespace Utility {
 
 namespace detail {
@@ -66,6 +72,7 @@ bool SetCurrentDirectory(const char *dir_name);
 bool SetCurrentDirectory(const wchar_t *dir_name);
 
 } // detail
+
 
 std::string GetModuleFileName(HMODULE module);
 template<class CONTAINER> bool GetModuleFileName(CONTAINER &buffer, HMODULE module = NULL) {
@@ -112,6 +119,7 @@ bool GetAppDir(CONTAINER &str) {
 	}
 	return true;
 }
+
 
 bool SetAppDir(void);
 

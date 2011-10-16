@@ -173,6 +173,27 @@ bool PathRemoveFileSpec(char *buffer) {
 bool PathRemoveFileSpec(wchar_t *buffer) {
 	return (::PathRemoveFileSpecW(buffer) != FALSE);
 }
+bool PathRemoveFileSpec(std::string &buffer) {
+	if(buffer.empty()) {
+		return false;
+	}
+	if(!PathRemoveFileSpec(&buffer.front())) {
+		return false;
+	}
+	buffer.resize(::strnlen(&buffer.front(), buffer.size()));
+	return true;
+}
+
+bool PathRemoveFileSpec(std::wstring &buffer) {
+	if(buffer.empty()) {
+		return false;
+	}
+	if(!PathRemoveFileSpec(&buffer.front())) {
+		return false;
+	}
+	buffer.resize(::wcsnlen(&buffer.front(), buffer.size()));
+	return true;
+}
 
 bool SetCurrentDirectory(const char *dir_name) {
 	return (::SetCurrentDirectoryA(dir_name) != FALSE);

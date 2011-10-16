@@ -58,6 +58,8 @@ unsigned int GetModuleFileName(wchar_t *buffer, unsigned int size, HMODULE modul
 #undef PathRemoveFileSpec
 bool PathRemoveFileSpec(char *buffer);
 bool PathRemoveFileSpec(wchar_t *buffer);
+bool PathRemoveFileSpec(std::string &buffer);
+bool PathRemoveFileSpec(std::wstring &buffer);
 
 #undef SetCurrentDirectory
 bool SetCurrentDirectory(const char *dir_name);
@@ -88,12 +90,23 @@ template<class CONTAINER> bool GetModuleFileName(CONTAINER &buffer, HMODULE modu
 }
 
 template<class CONTAINER>
+bool PathRemoveFileSpec(CONTAINER &buffer) {
+	if(buffer.empty()) {
+		return false;
+	}
+	if(!PathRemoveFileSpec(&buffer.front())) {
+		return false;
+	}
+	return true;
+}
+
+template<class CONTAINER>
 bool GetAppDir(CONTAINER &str) {
 	const bool get_result = GetModuleFileName(str);
 	if(!get_result || str.empty()) {
 		return false;
 	}
-	const bool path_remove_result = detail::PathRemoveFileSpec(&str[0]);
+	const bool path_remove_result = detail::PathRemoveFileSpec(str);
 	if(!path_remove_result) {
 		return false;
 	}

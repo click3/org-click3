@@ -161,6 +161,10 @@ MULTI_TO_WIDE_PROCS(UTF8)
 
 #undef MULTI_TO_WIDE_PROCS
 
+typedef boost::shared_ptr<boost::remove_pointer<HANDLE>::type> SHARED_HANDLE;
+
+SHARED_HANDLE ToSharedPtr(HANDLE handle);
+
 
 template<class T>
 bool FileRead(std::vector<T> &data, const wchar_t *path) {

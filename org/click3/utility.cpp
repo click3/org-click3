@@ -156,6 +156,12 @@ bool CharFileReadAndConvert(std::vector<wchar_t> &result, const T *path, unsigne
 	return true;
 }
 
+void MyCloseHandle(HANDLE handle) {
+	if(handle != NULL) {
+		::CloseHandle(handle);
+	}
+}
+
 } // anonymous
 
 namespace detail {
@@ -334,6 +340,10 @@ bool name##ToWChar(std::vector<wchar_t> &result, const boost::shared_ptr<std::st
 
 MULTI_TO_WIDE_PROCS(SJIS, CP_ACP)
 MULTI_TO_WIDE_PROCS(UTF8, CP_UTF8)
+
+SHARED_HANDLE ToSharedPtr(HANDLE handle) {
+	return SHARED_HANDLE(handle, MyCloseHandle);
+}
 
 } // Utility
 

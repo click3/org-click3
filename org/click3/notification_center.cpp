@@ -22,6 +22,7 @@
 #pragma warning(disable: 4640) // staticなローカル変数の初期化がスレッドセーフではありません
 #pragma warning(disable: 4668) // 定義されていないシンボルが#if/#elifで使用されました
 #pragma warning(disable: 4738) // 浮動小数点の計算結果を32bitに格納しているためパフォーマンスが低下しています
+#pragma warning(disable: 4819) // 表示できない文字を含んでいます。
 #pragma warning(disable: 4820) // 構造体のパッティングが発生しました
 #pragma warning(disable: 4986) // 詳細不明
 #pragma warning(disable: 4996) // セキュリティーホールになりうる標準C関数が使用されています

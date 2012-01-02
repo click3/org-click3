@@ -104,35 +104,35 @@ void MyPClose(FILE *fp) {
 	::_pclose(fp);
 }
 
-template<class IN_TYPE, class OUT_TYPE>
-bool StringConvert(std::vector<OUT_TYPE> &result, const IN_TYPE *buffer, unsigned int buffer_size, unsigned int code_page, boost::function<int (unsigned int, const IN_TYPE *, int, OUT_TYPE *, int)> convert_function) {
+template<typename IN_TYPE, typename OUT_TYPE, typename OUT_CONTAINER>
+bool StringConvert(OUT_CONTAINER &result, const IN_TYPE *buffer, unsigned int buffer_size, unsigned int code_page, boost::function<int (unsigned int, const IN_TYPE *, int, OUT_TYPE *, int)> convert_function) {
 	if(buffer == NULL || buffer_size > INT_MAX || !convert_function) {
 		return false;
 	}
 	if(buffer_size == 0) {
-		result.resize(1);
-		result[0] = static_cast<OUT_TYPE>('\0');
+		result.resize(0);
 		return true;
 	}
 	const int size = convert_function(code_page, buffer, static_cast<int>(buffer_size), NULL, 0);
 	if(size <= 0) {
 		return false;
 	}
-	result.resize(static_cast<unsigned int>(size) + 1);
-	const int convert_size = convert_function(code_page, buffer, static_cast<int>(buffer_size), &result.front(), static_cast<int>(result.size()));
+	result.resize(static_cast<unsigned int>(size));
+	const int convert_size = convert_function(code_page, buffer, static_cast<int>(buffer_size), &*result.begin(), size);
 	if(convert_size != size) {
 		return false;
 	}
-	result[static_cast<unsigned int>(size)] = static_cast<OUT_TYPE>('\0');
 	return true;
 }
 
-bool CharToWChar(std::vector<wchar_t> &out, const char *buffer, unsigned int buffer_size, unsigned int code_page) {
+template<typename Container>
+bool CharToWChar(Container &out, const char *buffer, unsigned int buffer_size, unsigned int code_page) {
 	const boost::function<int (unsigned int, const char *, int, wchar_t *, int)> convert_function = boost::bind(&::MultiByteToWideChar, _1, MB_ERR_INVALID_CHARS, _2, _3, _4, _5);
 	return StringConvert(out, buffer, buffer_size, code_page, convert_function);
 }
 
-bool WCharToChar(std::vector<char> &out, const wchar_t *buffer, unsigned int buffer_size, unsigned int code_page) {
+template<typename Container>
+bool WCharToChar(Container &out, const wchar_t *buffer, unsigned int buffer_size, unsigned int code_page) {
 	BOOL convert_error = FALSE;
 	const boost::function<int (unsigned int, const wchar_t *, int, char *, int)> convert_function = boost::bind(&::WideCharToMultiByte, _1, WC_SEPCHARS, _2, _3, _4, _5, reinterpret_cast<const char *>(NULL), &convert_error);
 	const bool result = StringConvert(out, buffer, buffer_size, code_page, convert_function);
@@ -235,11 +235,11 @@ boost::shared_ptr<FILE> MyFOpen(const wchar_t *path, const wchar_t *type) {
 	return result;
 }
 boost::shared_ptr<FILE> MyFOpen(const char *path, const char *type) {
-	std::vector<wchar_t> wpath;
-	std::vector<wchar_t> wtype;
+	std::wstring wpath;
+	std::wstring wtype;
 	boost::shared_ptr<FILE> result;
 	if(SJISToWChar(wpath, path) && !wpath.empty() && SJISToWChar(wtype, type) && !wtype.empty()) {
-		result = MyFOpen(&wpath.front(), &wtype.front());
+		result = MyFOpen(wpath.c_str(), wtype.c_str());
 	}
 	return result;
 }
@@ -259,11 +259,11 @@ boost::shared_ptr<FILE> MyPOpen(const wchar_t *command, const wchar_t *type) {
 	return result;
 }
 boost::shared_ptr<FILE> MyPOpen(const char *command, const char *type) {
-	std::vector<wchar_t> wcommand;
-	std::vector<wchar_t> wtype;
+	std::wstring wcommand;
+	std::wstring wtype;
 	boost::shared_ptr<FILE> result;
 	if(SJISToWChar(wcommand, command) && !wcommand.empty() && SJISToWChar(wtype, type) && !wtype.empty()) {
-		result = MyPOpen(&wcommand.front(), &wtype.front());
+		result = MyPOpen(wcommand.c_str(), wtype.c_str());
 	}
 	return result;
 }
@@ -337,6 +337,18 @@ bool name##ToWChar(std::vector<wchar_t> &result, const std::string &str) {			\
 }												\
 bool name##ToWChar(std::vector<wchar_t> &result, const boost::shared_ptr<std::string> str) {	\
 	return CharToWChar(result, str->c_str(), str->size(), code_page);			\
+}												\
+bool name##ToWChar(std::wstring &result, const char *str) {					\
+	return CharToWChar(result, str, ::strlen(str), code_page);				\
+}												\
+bool name##ToWChar(std::wstring &result, const std::vector<char> &str) {			\
+	return CharToWChar(result, &str.front(), str.size(), code_page);			\
+}												\
+bool name##ToWChar(std::wstring &result, const std::string &str) {				\
+	return CharToWChar(result, str.c_str(), str.size(), code_page);				\
+}												\
+bool name##ToWChar(std::wstring &result, const boost::shared_ptr<std::string> str) {		\
+	return CharToWChar(result, str->c_str(), str->size(), code_page);			\
 }
 
 MULTI_TO_WIDE_PROCS(SJIS, CP_ACP)
@@ -355,6 +367,18 @@ bool WCharTo##name##(std::vector<char> &result, const std::wstring &str) {			\
 	return WCharToChar(result, str.c_str(), str.size(), code_page);				\
 }												\
 bool WCharTo##name##(std::vector<char> &result, const boost::shared_ptr<std::wstring> str) {	\
+	return WCharToChar(result, str->c_str(), str->size(), code_page);			\
+}												\
+bool WCharTo##name##(std::string &result, const wchar_t *str) {					\
+	return WCharToChar(result, str, ::wcslen(str), code_page);				\
+}												\
+bool WCharTo##name##(std::string &result, const std::vector<wchar_t> &str) {			\
+	return WCharToChar(result, &str.front(), str.size(), code_page);			\
+}												\
+bool WCharTo##name##(std::string &result, const std::wstring &str) {				\
+	return WCharToChar(result, str.c_str(), str.size(), code_page);				\
+}												\
+bool WCharTo##name##(std::string &result, const boost::shared_ptr<std::wstring> str) {		\
 	return WCharToChar(result, str->c_str(), str->size(), code_page);			\
 }
 

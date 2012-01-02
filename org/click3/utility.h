@@ -178,48 +178,22 @@ typedef boost::shared_ptr<boost::remove_pointer<HANDLE>::type> SHARED_HANDLE;
 SHARED_HANDLE ToSharedPtr(HANDLE handle);
 
 
-template<class T>
-bool FileRead(std::vector<T> &data, const wchar_t *path) {
-	BOOST_STATIC_ASSERT(sizeof(T) == 1);
-	if(path == NULL || path[0] == '\0') {
+template<typename Container>
+bool FileRead(Container &result, const boost::filesystem::path &path) {
+	if(!boost::filesystem::exists(path) || !boost::filesystem::is_regular_file(path)) {
 		return false;
 	}
-	boost::shared_ptr<FILE> fp = MyFOpen(path, L"rb");
-	if(!fp) {
+	const unsigned long long int size = boost::filesystem::file_size(path);
+	boost::filesystem::ifstream ifs(path);
+	if(!ifs.is_open()) {
 		return false;
 	}
-	::fseek(fp.get(), 0, SEEK_END);
-	const long size = ::ftell(fp.get());
-	if(size < 0) {
-		return false;
-	}
-	::fseek(fp.get(), 0, SEEK_SET);
-	data.resize(static_cast<unsigned int>(size));
-	const unsigned int read_size = ::fread(&data.front(), 1, data.size(), fp.get());
-	if(read_size != data.size()) {
+	result.resize(static_cast<unsigned int>(size));
+	ifs.read(&*result.begin(), static_cast<long long int>(size));
+	if(!ifs.good()) {
 		return false;
 	}
 	return true;
-}
-
-template<class T>
-bool FileRead(std::vector<T> &data, const std::wstring &path) {
-	return FileRead(data, path.c_str());
-}
-
-template<class T>
-bool FileRead(std::vector<T> &data, const char *path) {
-	BOOST_STATIC_ASSERT(sizeof(T) == 1);
-	std::vector<wchar_t> wpath;
-	if(path == NULL || path[0] == '\0' || !SJISToWChar(wpath, path) || wpath.empty()) {
-		return false;
-	}
-	return FileRead(data, &wpath.front());
-}
-
-template<class T>
-bool FileRead(std::vector<T> &data, const std::string &path) {
-	return FileRead(data, path.c_str());
 }
 
 } // Utility

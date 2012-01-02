@@ -325,22 +325,43 @@ boost::shared_ptr<const std::wstring> Str2Ptr(const wchar_t* str) {
 	return boost::shared_ptr<const std::wstring>(new std::wstring(str));
 }
 
-#define MULTI_TO_WIDE_PROCS(name, code_page)													\
-bool name##ToWChar(std::vector<wchar_t> &result, const char *str) {										\
-	return CharToWChar(result, str, strlen(str), code_page);										\
-}																			\
-bool name##ToWChar(std::vector<wchar_t> &result, const std::vector<char> &str) {								\
-	return CharToWChar(result, &str.front(), str.size(), code_page);									\
-}																			\
-bool name##ToWChar(std::vector<wchar_t> &result, const std::string &str) {									\
-	return CharToWChar(result, str.c_str(), str.size(), code_page);									\
-}																			\
-bool name##ToWChar(std::vector<wchar_t> &result, const boost::shared_ptr<std::string> str) {						\
-	return CharToWChar(result, str->c_str(), str->size(), code_page);									\
+#define MULTI_TO_WIDE_PROCS(name, code_page)							\
+bool name##ToWChar(std::vector<wchar_t> &result, const char *str) {				\
+	return CharToWChar(result, str, ::strlen(str), code_page);				\
+}												\
+bool name##ToWChar(std::vector<wchar_t> &result, const std::vector<char> &str) {		\
+	return CharToWChar(result, &str.front(), str.size(), code_page);			\
+}												\
+bool name##ToWChar(std::vector<wchar_t> &result, const std::string &str) {			\
+	return CharToWChar(result, str.c_str(), str.size(), code_page);				\
+}												\
+bool name##ToWChar(std::vector<wchar_t> &result, const boost::shared_ptr<std::string> str) {	\
+	return CharToWChar(result, str->c_str(), str->size(), code_page);			\
 }
 
 MULTI_TO_WIDE_PROCS(SJIS, CP_ACP)
 MULTI_TO_WIDE_PROCS(UTF8, CP_UTF8)
+
+#undef WIDE_TO_MULTI_PROCS
+
+#define WIDE_TO_MULTI_PROCS(name, code_page)							\
+bool WCharTo##name##(std::vector<char> &result, const wchar_t *str) {				\
+	return WCharToChar(result, str, ::wcslen(str), code_page);				\
+}												\
+bool WCharTo##name##(std::vector<char> &result, const std::vector<wchar_t> &str) {		\
+	return WCharToChar(result, &str.front(), str.size(), code_page);			\
+}												\
+bool WCharTo##name##(std::vector<char> &result, const std::wstring &str) {			\
+	return WCharToChar(result, str.c_str(), str.size(), code_page);				\
+}												\
+bool WCharTo##name##(std::vector<char> &result, const boost::shared_ptr<std::wstring> str) {	\
+	return WCharToChar(result, str->c_str(), str->size(), code_page);			\
+}
+
+WIDE_TO_MULTI_PROCS(SJIS, CP_ACP)
+WIDE_TO_MULTI_PROCS(UTF8, CP_UTF8)
+
+#undef WIDE_TO_MULTI_PROCS
 
 SHARED_HANDLE ToSharedPtr(HANDLE handle) {
 	return SHARED_HANDLE(handle, MyCloseHandle);

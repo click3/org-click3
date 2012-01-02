@@ -150,16 +150,28 @@ boost::shared_ptr<const std::wstring> Str2Ptr(const std::wstring &str);
 boost::shared_ptr<const std::wstring> Str2Ptr(const wchar_t* str);
 
 
-#define MULTI_TO_WIDE_PROCS(name)										\
-bool name##ToWChar(std::vector<wchar_t> &result, const char *str);					\
+#define MULTI_TO_WIDE_PROCS(name)								\
+bool name##ToWChar(std::vector<wchar_t> &result, const char *str);				\
 bool name##ToWChar(std::vector<wchar_t> &result, const std::vector<char> &str);			\
-bool name##ToWChar(std::vector<wchar_t> &result, const std::string &str);				\
+bool name##ToWChar(std::vector<wchar_t> &result, const std::string &str);			\
 bool name##ToWChar(std::vector<wchar_t> &result, const boost::shared_ptr<std::string> str);
 
 MULTI_TO_WIDE_PROCS(SJIS)
 MULTI_TO_WIDE_PROCS(UTF8)
 
 #undef MULTI_TO_WIDE_PROCS
+
+#define WIDE_TO_MULTI_PROCS(name)								\
+bool WCharTo##name##(std::vector<char> &result, const wchar_t *str);				\
+bool WCharTo##name##(std::vector<char> &result, const std::vector<wchar_t> &str);		\
+bool WCharTo##name##(std::vector<char> &result, const std::wstring &str);			\
+bool WCharTo##name##(std::vector<char> &result, const boost::shared_ptr<std::wstring> str);
+
+WIDE_TO_MULTI_PROCS(SJIS)
+WIDE_TO_MULTI_PROCS(UTF8)
+
+#undef WIDE_TO_MULTI_PROCS
+
 
 typedef boost::shared_ptr<boost::remove_pointer<HANDLE>::type> SHARED_HANDLE;
 

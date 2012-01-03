@@ -134,7 +134,7 @@ bool CharToWChar(Container &out, const char *buffer, unsigned int buffer_size, u
 template<typename Container>
 bool WCharToChar(Container &out, const wchar_t *buffer, unsigned int buffer_size, unsigned int code_page) {
 	BOOL convert_error = FALSE;
-	const boost::function<int (unsigned int, const wchar_t *, int, char *, int)> convert_function = boost::bind(&::WideCharToMultiByte, _1, WC_SEPCHARS, _2, _3, _4, _5, reinterpret_cast<const char *>(NULL), &convert_error);
+	const boost::function<int (unsigned int, const wchar_t *, int, char *, int)> convert_function = boost::bind(&::WideCharToMultiByte, _1, 0, _2, _3, _4, _5, reinterpret_cast<const char *>(NULL), &convert_error);
 	const bool result = StringConvert(out, buffer, buffer_size, code_page, convert_function);
 	if(!result || convert_error == TRUE) {
 		return false;

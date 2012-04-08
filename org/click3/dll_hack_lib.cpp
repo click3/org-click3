@@ -234,7 +234,7 @@ bool FindProcess(std::vector<boost::shared_ptr<PROCESSENTRY32W> > &result, const
 		FindExeName(const std::wstring &exe_name, const std::wstring &module_path) : exe_name(exe_name), module_path(module_path) { }
 		std::wstring exe_name;
 		std::wstring module_path;
-		std::vector<boost::shared_ptr<PROCESSENTRY32W> > &operator()(std::vector<boost::shared_ptr<PROCESSENTRY32W> > &list, boost::shared_ptr<PROCESSENTRY32W> value) const {
+		std::vector<boost::shared_ptr<PROCESSENTRY32W> > operator()(std::vector<boost::shared_ptr<PROCESSENTRY32W> > &list, boost::shared_ptr<PROCESSENTRY32W> value) const {
 			if(exe_name == value->szExeFile) {
 				while(true) {
 					std::vector<boost::shared_ptr<MODULEENTRY32W> > module_list;
@@ -252,7 +252,9 @@ bool FindProcess(std::vector<boost::shared_ptr<PROCESSENTRY32W> > &result, const
 			return list;
 		}
 	};
-	result.swap(std::accumulate(process_list.begin(), process_list.end(), std::vector<boost::shared_ptr<PROCESSENTRY32W> >(), FindExeName(exe_name, dll_abs_path.wstring())));
+  std::vector<boost::shared_ptr<PROCESSENTRY32W> > initValue;
+  initValue = std::accumulate(process_list.begin(), process_list.end(), initValue, FindExeName(exe_name, dll_abs_path.wstring()));
+	result.swap(initValue);
 	return true;
 }
 

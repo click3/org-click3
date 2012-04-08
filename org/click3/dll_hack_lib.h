@@ -67,6 +67,9 @@ bool ChangeVartualProcAddress(void *class_ptr, void **original_ptr, proc_type te
 
 bool SetupConsole();
 
+bool DllInjection(const wchar_t *exe_name, const boost::filesystem::path &dll_path);
+unsigned int GetProcRemoteAddress(unsigned int process_id, const wchar_t * const dll_name, const char * const proc_name);
+
 } // org
 
 } // click3

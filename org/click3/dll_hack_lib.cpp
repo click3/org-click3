@@ -263,25 +263,29 @@ DWORD (WINAPI *GetLoadLibraryPath(unsigned int process_id))(void *) {
 }
 
 typedef boost::shared_ptr<boost::remove_pointer<HANDLE>::type> SHREAD_HANDLE;
-void MyVirtualFreeEx(SHREAD_HANDLE process, void *addr) {
-	BOOST_ASSERT(process);
+void MyVirtualFreeEx(HANDLE process, void *addr) {
+	BOOST_ASSERT(process != NULL);
 	DWORD exit_code;
-	if(addr != NULL && FALSE != ::GetExitCodeProcess(process.get(), &exit_code) && exit_code == STILL_ACTIVE) {
-		const BOOL result = ::VirtualFreeEx(process.get(), addr, 0, MEM_RELEASE);
+	if(addr != NULL && FALSE != ::GetExitCodeProcess(process, &exit_code) && exit_code == STILL_ACTIVE) {
+		const BOOL result = ::VirtualFreeEx(process, addr, 0, MEM_RELEASE);
 		BOOST_ASSERT(result != FALSE);
 	}
 }
 
-bool CreateThreadParam(boost::shared_ptr<void> &result, SHREAD_HANDLE process, const void *data, unsigned int data_size) {
+bool CreateThreadParam(boost::shared_ptr<void> &result, HANDLE process, const void *data, unsigned int data_size) {
 	boost::function<void (void *)> func = boost::bind(&MyVirtualFreeEx, process, _1);
-	result.reset(::VirtualAllocEx(process.get(), NULL, data_size, MEM_COMMIT, PAGE_READWRITE), func);
+	result.reset(::VirtualAllocEx(process, NULL, data_size, MEM_COMMIT, PAGE_READWRITE), func);
 	if(result.get() == NULL) {
 		return false;
 	}
-	if(FALSE == ::WriteProcessMemory(process.get(), result.get(), data, data_size, NULL)) {
+	if(FALSE == ::WriteProcessMemory(process, result.get(), data, data_size, NULL)) {
 		return false;
 	}
 	return true;
+}
+
+bool CreateThreadParam(boost::shared_ptr<void> &result, SHREAD_HANDLE process, const void *data, unsigned int data_size) {
+	return CreateThreadParam(result, process.get(), data, data_size);
 }
 
 void MyCloseHandle(HANDLE handle) {
@@ -360,7 +364,30 @@ bool DllInjection(const wchar_t *exe_name, const boost::filesystem::path &dll_pa
 			return false;
 		}
 	}
+  return true;
+}
 
+bool DllInjection(const HANDLE process, const boost::filesystem::path &dll_path) {
+	const boost::filesystem::path dll_abs_path = boost::filesystem::absolute(dll_path);
+	if(process == NULL) {
+		return false;
+	}
+	DWORD (WINAPI * const proc_address)(LPVOID) = GetLoadLibraryPath(GetProcessId(process));
+	if(proc_address == NULL) {
+		return false;
+	}
+	const std::wstring &thread_param_string = dll_abs_path.wstring();
+	boost::shared_ptr<void> thread_param;
+	if(!CreateThreadParam(thread_param, process, thread_param_string.c_str(), (thread_param_string.size() + 1) * sizeof(wchar_t))) {
+		return false;
+	}
+	const SHREAD_HANDLE thread = SHREAD_HANDLE(::CreateRemoteThread(process, NULL, 0, proc_address, thread_param.get(), 0, NULL), &MyCloseHandle);
+	if(thread.get() == NULL) {
+		return false;
+	}
+	if(WAIT_OBJECT_0 != ::WaitForSingleObject(thread.get(), INFINITE)) {
+		return false;
+	}
 	return true;
 }
 

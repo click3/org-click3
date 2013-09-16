@@ -127,6 +127,7 @@ bool ChangeCode(unsigned int addr, const unsigned char *old_code, const unsigned
 		return false;
 	}
 	if(::memcmp(write_ptr, old_code, size) != 0) {
+    ChangeProtect(&old_protect, write_ptr, old_protect);
 		return false;
 	}
 	::memcpy(write_ptr, new_code, size);

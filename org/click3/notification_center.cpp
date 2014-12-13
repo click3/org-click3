@@ -6,6 +6,7 @@
 #pragma warning(disable: 4127) // 条件式が定数です
 #pragma warning(disable: 4180) // 関数ポインターに対して無効な装飾子を使用しています
 #pragma warning(disable: 4189) // 変数に代入後参照されていません
+#pragma warning(disable: 4191) // この関数ポインターのcastは安全ではない可能性があります
 #pragma warning(disable: 4201) // 非標準の拡張機能、無名の構造体/共用体を使用しています
 #pragma warning(disable: 4263) // 仮想関数をオーバーライドしていますが、引数の型が違います
 #pragma warning(disable: 4264) // 引数の型のみ違う同名関数が定義されたため、仮想関数にはアクセスできなくなります
@@ -26,6 +27,10 @@
 #pragma warning(disable: 4820) // 構造体のパッティングが発生しました
 #pragma warning(disable: 4986) // 詳細不明
 #pragma warning(disable: 4996) // セキュリティーホールになりうる標準C関数が使用されています
+#pragma warning(disable: 5025) // move可能な定義が削除されています
+#pragma warning(disable: 5026) // move可能なコンストラクタが削除されているかpublicではありません
+#pragma warning(disable: 5027) // move可能な定義が削除されているかpublicではありません
+
 
 // RELEASEビルド時のみ発生する警告の無効化
 #ifndef _DEBUG

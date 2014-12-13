@@ -26,6 +26,8 @@
 #pragma warning(disable: 4820) // 構造体のパッティングが発生しました
 #pragma warning(disable: 4986) // 詳細不明
 #pragma warning(disable: 4996) // セキュリティーホールになりうる標準C関数が使用されています
+#pragma warning(disable: 5025) // move可能な定義が削除されています
+#pragma warning(disable: 5027) // move可能な定義が削除されているかpublicではありません
 
 // RELEASEビルド時のみ発生する警告の無効化
 #ifndef _DEBUG

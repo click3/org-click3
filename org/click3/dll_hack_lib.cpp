@@ -24,6 +24,8 @@
 #pragma warning(disable: 4819) // 表示できない文字を含んでいます。
 #pragma warning(disable: 4820) // 構造体のパッティングが発生しました
 #pragma warning(disable: 4986) // 詳細不明
+#pragma warning(disable: 5025) // move可能な定義が削除されています
+#pragma warning(disable: 5027) // move可能な定義が削除されているかpublicではありません
 
 // RELEASEビルド時のみ発生する警告の無効化
 #ifndef _DEBUG
@@ -239,8 +241,7 @@ bool FindProcess(std::vector<boost::shared_ptr<PROCESSENTRY32W> > &result, const
 			if(exe_name == value->szExeFile) {
 				while(true) {
 					std::vector<boost::shared_ptr<MODULEENTRY32W> > module_list;
-					const bool result = CreateModuleList(module_list, value->th32ProcessID);
-					if(!result) { // デバッグ中など、特殊なプロセスであれば失敗するので無視する
+					if(!CreateModuleList(module_list, value->th32ProcessID)) { // デバッグ中など、特殊なプロセスであれば失敗するので無視する
 						break;
 					}
 					const std::vector<boost::shared_ptr<MODULEENTRY32W> >::const_iterator it = std::find_if(module_list.begin(), module_list.end(), FindModulePath(module_path));

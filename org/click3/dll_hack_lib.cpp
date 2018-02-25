@@ -21,10 +21,12 @@
 #pragma warning(disable: 4640) // staticなローカル変数の初期化がスレッドセーフではありません
 #pragma warning(disable: 4668) // 定義されていないシンボルが#if/#elifで使用されました
 #pragma warning(disable: 4738) // 浮動小数点の計算結果を32bitに格納しているためパフォーマンスが低下しています
+#pragma warning(disable: 4774) // sprintf_sに文字列リテラル以外が渡されました
 #pragma warning(disable: 4819) // 表示できない文字を含んでいます。
 #pragma warning(disable: 4820) // 構造体のパッティングが発生しました
 #pragma warning(disable: 4986) // 詳細不明
 #pragma warning(disable: 5025) // move可能な定義が削除されています
+#pragma warning(disable: 5026) // move constructorが暗黙で削除されました
 #pragma warning(disable: 5027) // move可能な定義が削除されているかpublicではありません
 #pragma warning(disable: 5031) // pragmaのpushとpopが対応していない可能性があります
 

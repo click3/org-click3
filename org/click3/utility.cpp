@@ -17,17 +17,22 @@
 #pragma warning(disable: 4555) // 副作用のない式
 #pragma warning(disable: 4611) // 環境により動作が異なる可能性のある機能が使用されています
 #pragma warning(disable: 4619) // 無効化を試みた警告番号は存在しません
+#pragma warning(disable: 4623) // 既定のコンストラクタは暗黙で削除されました
 #pragma warning(disable: 4625) // 基本クラスのコピーコンストラクタがアクセス不能なのでコピーコンストラクタが作れませんでした
 #pragma warning(disable: 4626) // 基本クラスの代入演算子がアクセス不能なので代入演算子が作れませんでした
 #pragma warning(disable: 4640) // staticなローカル変数の初期化がスレッドセーフではありません
 #pragma warning(disable: 4668) // 定義されていないシンボルが#if/#elifで使用されました
+#pragma warning(disable: 4710) // インライン関数にできません
 #pragma warning(disable: 4738) // 浮動小数点の計算結果を32bitに格納しているためパフォーマンスが低下しています
+#pragma warning(disable: 4774) // フォーマット文字列がリテラルではありません
 #pragma warning(disable: 4819) // 表示できない文字を含んでいます。
 #pragma warning(disable: 4820) // 構造体のパッティングが発生しました
 #pragma warning(disable: 4986) // 詳細不明
 #pragma warning(disable: 4996) // セキュリティーホールになりうる標準C関数が使用されています
 #pragma warning(disable: 5025) // move可能な定義が削除されています
+#pragma warning(disable: 5026) // move可能な定義が暗黙で削除されています
 #pragma warning(disable: 5027) // move可能な定義が削除されているかpublicではありません
+#pragma warning(disable: 5045) // Spectre軽減コードが挿入されます
 
 // RELEASEビルド時のみ発生する警告の無効化
 #ifndef _DEBUG
@@ -62,6 +67,7 @@
 #pragma warning(disable: 4514) // 使用されていない関数/メソッドが削除されました
 #pragma warning(disable: 4640) // staticなローカル変数の初期化がスレッドセーフではありません
 #pragma warning(disable: 4710) // インライン関数として選択されましたがインライン展開できませんでした
+#pragma warning(disable: 5045) // Spectre軽減コードが挿入されます
 
 // RELEASEビルド時のみ発生する警告の無効化
 #ifndef _DEBUG
